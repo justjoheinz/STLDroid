@@ -107,6 +107,7 @@ public class STLView extends PApplet {
 	private PShape stl;
 	private float rotateX;
 	private Mesh3D mesh;
+	private PShape shape;
 	private ToxiclibsSupport toxic;
 
 	private Download downloader;
@@ -128,8 +129,13 @@ public class STLView extends PApplet {
 		rotateX(rotateX);
 		rotateY(rotateY);
 		scale(scale);
+		if (mesh != null) {
 		toxic.chooseStrokeFill(false, TColor.newGray(150), TColor.newGray(150));
 		toxic.mesh(mesh, false);
+		}
+		else {
+			shape(shape);
+		}
 	}
 
 	private void initlights() {
@@ -177,15 +183,9 @@ public class STLView extends PApplet {
 			}
 		}
 		if (fileUri.getLastPathSegment().toLowerCase().endsWith(".obj")) {
-			try {
-				Log.i(TAG, "STL File");
-				mesh = new STLAsciiReader().load(fileUri.getPath());
-			} catch (FileNotFoundException e) {
-				Log.e(TAG, e.getMessage());
-			} catch (IllegalStateException e) {
-				Toast.makeText(STLView.this, "Not an ASCII STL file",
-						Toast.LENGTH_LONG).show();
-			}
+			Log.i(TAG, "obj File");
+			mesh = null;
+			shape = loadShape(fileUri.getPath());
 		}
 	}
 
