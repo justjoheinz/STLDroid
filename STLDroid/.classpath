@@ -4,5 +4,7 @@
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry kind="src" path="FileExplorer_src"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/toxiclibs"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/android-core"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

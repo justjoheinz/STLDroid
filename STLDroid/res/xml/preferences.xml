@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="File"></PreferenceCategory>
+    <PreferenceCategory android:title="Rendering"></PreferenceCategory>
+    <PreferenceCategory android:title="Bounding Box"></PreferenceCategory>
+    
+</PreferenceScreen>
