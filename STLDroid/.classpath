@@ -6,5 +6,6 @@
 	<classpathentry kind="src" path="FileExplorer_src"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/toxiclibs"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/android-core"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/processing-opengl"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

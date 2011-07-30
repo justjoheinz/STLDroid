@@ -165,7 +165,18 @@ public class STLView extends PApplet {
 		}
 		Log.i(TAG, "filename: " + fileUri.getPath());
 		Log.i(TAG, "filename: " + fileUri.getPath());
-		if (fileUri.getLastPathSegment().endsWith(".stl")) {
+		if (fileUri.getLastPathSegment().toLowerCase().endsWith(".stl")) {
+			try {
+				Log.i(TAG, "STL File");
+				mesh = new STLAsciiReader().load(fileUri.getPath());
+			} catch (FileNotFoundException e) {
+				Log.e(TAG, e.getMessage());
+			} catch (IllegalStateException e) {
+				Toast.makeText(STLView.this, "Not an ASCII STL file",
+						Toast.LENGTH_LONG).show();
+			}
+		}
+		if (fileUri.getLastPathSegment().toLowerCase().endsWith(".obj")) {
 			try {
 				Log.i(TAG, "STL File");
 				mesh = new STLAsciiReader().load(fileUri.getPath());
