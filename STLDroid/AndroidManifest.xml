@@ -21,20 +21,20 @@
 				<category android:name="android.intent.category.BROWSABLE"></category>
 				<data android:scheme="file" />
 				<data android:scheme="http" />
-				<!-- <data android:mimeType="*" /> -->
 				<data android:pathPattern=".*\\.stl" />
 				<data android:host="*" />
 			</intent-filter>
+			<!-- not yet implemented
 			<intent-filter>
 				<action android:name="android.intent.action.VIEW" />/>
 				<category android:name="android.intent.category.DEFAULT"></category>
 				<category android:name="android.intent.category.BROWSABLE"></category>
 				<data android:scheme="file" />
 				<data android:scheme="http" />
-				<!-- <data android:mimeType="*" /> -->
 				<data android:pathPattern=".*\\.obj" />
 				<data android:host="*" />
 			</intent-filter>
+			 -->
 		</activity>
 		<activity android:name="Preferences"></activity>
 

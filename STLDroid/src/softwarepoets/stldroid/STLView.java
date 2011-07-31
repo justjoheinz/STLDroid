@@ -180,6 +180,7 @@ public class STLView extends PApplet {
 			} catch (IllegalStateException e) {
 				Toast.makeText(STLView.this, "Not an ASCII STL file",
 						Toast.LENGTH_LONG).show();
+				finish();
 			}
 		}
 		if (fileUri.getLastPathSegment().toLowerCase().endsWith(".obj")) {

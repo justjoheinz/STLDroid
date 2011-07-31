@@ -18,6 +18,7 @@ public class STLDroid extends Activity {
 		Intent fileIntent = new Intent(STLDroid.this, FileDialog.class);
 		fileIntent.putExtra(FileDialog.START_PATH, "/sdcard/download");
 		startActivityForResult(fileIntent, 1);
+		
 	}
 
 	@Override
@@ -31,6 +32,7 @@ public class STLDroid extends Activity {
 				Intent intent = new Intent(Intent.ACTION_VIEW,
 						Uri.parse(result), STLDroid.this, STLView.class);
 				startActivity(intent);
+				finish();
 			}
 		}
 	}
