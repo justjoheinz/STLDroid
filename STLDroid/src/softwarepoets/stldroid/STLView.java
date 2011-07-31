@@ -202,6 +202,17 @@ public class STLView extends PApplet {
 		}
 	}
 
+	private void getPrefs() {
+		preferences = PreferenceManager
+				.getDefaultSharedPreferences(STLView.this);
+		brightness = Float.parseFloat(preferences
+				.getString("brightness", "200"));
+		showBuild = preferences.getBoolean("showBuildPlatform", false);
+		xBuild = Float.parseFloat(preferences.getString("xBuild", "100"));
+		yBuild = Float.parseFloat(preferences.getString("yBuild", "100"));
+		zBuild = Float.parseFloat(preferences.getString("zBuild", "100"));
+	}
+
 	private void initlights() {
 		directionalLight(brightness, brightness, brightness, 0, 0, 1);
 		directionalLight(brightness, brightness, brightness, 1, 1, 0);
@@ -231,14 +242,7 @@ public class STLView extends PApplet {
 	protected void onStart() {
 		super.onStart();
 
-		preferences = PreferenceManager
-				.getDefaultSharedPreferences(STLView.this);
-		brightness = Float.parseFloat(preferences
-				.getString("brightness", "200"));
-		showBuild = preferences.getBoolean("showBuildPlatform", false);
-		xBuild = Float.parseFloat(preferences.getString("xBuild", "100"));
-		yBuild = Float.parseFloat(preferences.getString("yBuild", "100"));
-		zBuild = Float.parseFloat(preferences.getString("zBuild", "100"));
+		getPrefs();
 		bBox = new AABB(new Vec3D(0, 0, 0), new Vec3D(xBuild / 2, yBuild / 2,
 				zBuild / 2));
 		if (downloader != null) {
