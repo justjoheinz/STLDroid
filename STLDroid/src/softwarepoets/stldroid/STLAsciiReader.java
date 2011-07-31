@@ -9,7 +9,6 @@ import java.io.StreamTokenizer;
 import toxi.geom.Vec3D;
 import toxi.geom.mesh.Mesh3D;
 import toxi.geom.mesh.TriangleMesh;
-import android.util.Log;
 
 public class STLAsciiReader {
 
@@ -24,17 +23,13 @@ public class STLAsciiReader {
 				if (!"normal".equalsIgnoreCase(t.sval))
 					throw new IllegalStateException(t.sval);
 				t.nextToken();
-				Log.i("STLAsciiReader", "Token:" + t.sval);
 				t.nextToken();
-				Log.i("STLAsciiReader", "Token:" + t.sval);
 				t.nextToken();
-				Log.i("STLAsciiReader", "Token:" + t.sval);
 				// vertex
 				t.nextToken();
 				if (!"outer".equalsIgnoreCase(t.sval))
 					throw new IllegalStateException(t.sval);
 				t.nextToken();
-				Log.i("STLAsciiReader", "Token:" + t.sval);
 				if (!"loop".equalsIgnoreCase(t.sval))
 					throw new IllegalStateException(t.sval);
 				float[] vertex = new float[3];
@@ -117,16 +112,14 @@ public class STLAsciiReader {
 
 	private ParserState state = new HeadState();
 
-	public Mesh3D load(InputStream fis) {
+	public Mesh3D load(InputStream fis) throws IllegalStateException {
 		tmpMesh = new TriangleMesh();
-		Log.i("STLAsciiReader", "parsing...");
 		t = new StreamTokenizer(fis);
 		t.resetSyntax();
 		t.wordChars(33, 126);
 		t.whitespaceChars(0, 32);
 		
 		while ( state != null) {
-			Log.i("STLAsciiReader", "parsing...");
 			state = state.next();
 		}
 
@@ -134,7 +127,7 @@ public class STLAsciiReader {
 
 	}
 
-	public Mesh3D load(String fileName) throws FileNotFoundException {
+	public Mesh3D load(String fileName) throws FileNotFoundException, IllegalStateException {
 		return load(new FileInputStream(fileName));
 	}
 }

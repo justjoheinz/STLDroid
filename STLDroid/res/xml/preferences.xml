@@ -7,6 +7,11 @@
     <PreferenceCategory android:title="Rendering">
         <EditTextPreference android:summary="Brightness for light rendering" android:key="brightness" android:title="Brightness"></EditTextPreference>
     </PreferenceCategory>
-    <PreferenceCategory android:title="Bounding Box"></PreferenceCategory>
+    <PreferenceCategory android:title="Bounding Box">
+        <CheckBoxPreference android:title="Show Build Platform" android:key="showBuildPlatform"></CheckBoxPreference>
+        <EditTextPreference android:title="X length in mm" android:key="xBuild"></EditTextPreference>
+        <EditTextPreference android:key="yBuild" android:title="Y length in mm"></EditTextPreference>
+        <EditTextPreference android:title="Z length in mm" android:key="zBuild"></EditTextPreference>
+    </PreferenceCategory>
     
 </PreferenceScreen>

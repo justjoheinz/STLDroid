@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.view.KeyEvent;
 
@@ -25,8 +26,8 @@ public class STLDroid extends Activity {
 				Intent intent = new Intent(Intent.ACTION_VIEW,
 						Uri.parse(result), STLDroid.this, STLView.class);
 				startActivity(intent);
-				finish();
 			}
+			finish();
 		}
 	}
 
@@ -35,21 +36,11 @@ public class STLDroid extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		preferences = PreferenceManager.getDefaultSharedPreferences(STLDroid.this);
-		String path = preferences.getString("path", "/sdcard");
+		String path = preferences.getString("path", Environment.getExternalStorageDirectory().getPath());
 		Intent fileIntent = new Intent(STLDroid.this, FileDialog.class);
 		fileIntent.putExtra(FileDialog.START_PATH, path);
 		startActivityForResult(fileIntent, 1);
 	}
 
-	@Override
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		super.onKeyDown(keyCode, event);
-		if (keyCode == KeyEvent.KEYCODE_MENU) {
-			Intent intent = new Intent(STLDroid.this, Preferences.class);
-			startActivity(intent);
-			return true;
-		}
-		return false;
-	}
 
 }

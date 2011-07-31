@@ -12,8 +12,10 @@ import java.net.URLConnection;
 import java.util.concurrent.ExecutionException;
 
 import processing.core.PApplet;
-import processing.core.PShape;
 import toxi.color.TColor;
+import toxi.geom.AABB;
+import toxi.geom.Plane;
+import toxi.geom.Vec3D;
 import toxi.geom.mesh.Mesh3D;
 import toxi.processing.ToxiclibsSupport;
 import android.app.ProgressDialog;
@@ -80,11 +82,6 @@ public class STLView extends PApplet {
 		}
 
 		@Override
-		protected void onCancelled() {
-			super.onCancelled();
-		}
-
-		@Override
 		protected void onPostExecute(Uri result) {
 			pd.dismiss();
 		}
@@ -92,6 +89,33 @@ public class STLView extends PApplet {
 		@Override
 		protected void onPreExecute() {
 			pd = ProgressDialog.show(STLView.this, null, "Downloading");
+		}
+
+	}
+
+	class Parser extends AsyncTask<String, Void, Mesh3D> {
+		private ProgressDialog pd;
+
+		@Override
+		protected void onPostExecute(Mesh3D result) {
+			pd.dismiss();
+			mesh = result;
+		}
+
+		@Override
+		protected void onPreExecute() {
+			pd = ProgressDialog.show(STLView.this, null, "Parsing");
+		}
+
+		@Override
+		protected Mesh3D doInBackground(String... params) {
+			STLAsciiReader reader = new STLAsciiReader();
+			try {
+				return reader.load(params[0]);
+			} catch (FileNotFoundException e) {
+				Log.e(TAG, e.getMessage());
+			}
+			return null;
 		}
 
 	}
@@ -109,7 +133,6 @@ public class STLView extends PApplet {
 
 	private float rotateX;
 	private Mesh3D mesh;
-	private PShape shape;
 	private ToxiclibsSupport toxic;
 
 	private float brightness = 200;
@@ -127,20 +150,39 @@ public class STLView extends PApplet {
 	int mWidth, mHeight, mTouchSlop;
 	long mLastGestureTime;
 
+	private boolean showBuild;
+
+	private float xBuild;
+
+	private float yBuild;
+
+	private float zBuild;
+
+	private AABB bBox;
+
 	@Override
 	public void draw() {
 		background(0);
-		initlights();
 		translate(screenWidth / 2, screenHeight / 2);
+		scale(scale);
+		initlights();
 		rotateX(rotateX);
 		rotateY(rotateY);
-		scale(scale);
+		if (showBuild) {
+			toxic.chooseStrokeFill(false, TColor.newRGBA(1f, 0, 0, 0.01f),
+					TColor.newRGBA(0.7f, 0, 0, 0.1f));
+			toxic.box(bBox);
+			/*
+			 * toxic.plane(Plane.XY, 100); toxic.plane(Plane.XZ, 100);
+			 * toxic.plane(Plane.YZ, 100);
+			 */
+		}
+
 		if (mesh != null) {
-			toxic.chooseStrokeFill(false, TColor.newGray(150),
-					TColor.newGray(150));
+			shininess(1.0f);
+			toxic.chooseStrokeFill(false, TColor.newGray(0.8f),
+					TColor.newGray(0.8f));
 			toxic.mesh(mesh, false);
-		} else {
-			shape(shape);
 		}
 	}
 
@@ -175,7 +217,14 @@ public class STLView extends PApplet {
 
 		preferences = PreferenceManager
 				.getDefaultSharedPreferences(STLView.this);
-		brightness = Float.parseFloat(preferences.getString("brightness", "200"));
+		brightness = Float.parseFloat(preferences
+				.getString("brightness", "200"));
+		showBuild = preferences.getBoolean("showBuildPlatform", false);
+		xBuild = Float.parseFloat(preferences.getString("xBuild", "100"));
+		yBuild = Float.parseFloat(preferences.getString("yBuild", "100"));
+		zBuild = Float.parseFloat(preferences.getString("zBuild", "100"));
+		bBox = new AABB(new Vec3D(0, 0, 0), new Vec3D(xBuild / 2, yBuild / 2,
+				zBuild / 2));
 		if (downloader != null) {
 			try {
 				fileUri = downloader.get();
@@ -191,20 +240,16 @@ public class STLView extends PApplet {
 		Log.i(TAG, "filename: " + fileUri.getPath());
 		if (fileUri.getLastPathSegment().toLowerCase().endsWith(".stl")) {
 			try {
-				Log.i(TAG, "STL File");
-				mesh = new STLAsciiReader().load(fileUri.getPath());
-			} catch (FileNotFoundException e) {
-				Log.e(TAG, e.getMessage());
+				if (mesh == null) {
+					Log.i(TAG, "STL File");
+					Parser parser = new Parser();
+					parser.execute(fileUri.getPath());
+				}
 			} catch (IllegalStateException e) {
 				Toast.makeText(STLView.this, "Not an ASCII STL file",
 						Toast.LENGTH_LONG).show();
 				finish();
 			}
-		}
-		if (fileUri.getLastPathSegment().toLowerCase().endsWith(".obj")) {
-			Log.i(TAG, "obj File");
-			mesh = null;
-			shape = loadShape(fileUri.getPath());
 		}
 	}
 
