@@ -13,15 +13,18 @@ import java.util.concurrent.ExecutionException;
 
 import processing.core.PApplet;
 import processing.core.PShape;
-import processing.core.PShape3D;
 import toxi.color.TColor;
 import toxi.geom.mesh.Mesh3D;
 import toxi.processing.ToxiclibsSupport;
 import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.widget.Toast;
 
@@ -104,16 +107,19 @@ public class STLView extends PApplet {
 	public static final float MAX_SCALE = 4f;
 	public static final float ZOOM = 1.5f;
 
-	private PShape stl;
 	private float rotateX;
 	private Mesh3D mesh;
 	private PShape shape;
 	private ToxiclibsSupport toxic;
 
+	private float brightness = 200;
+
 	private Download downloader;
 
 	private float rotateY;
 	private Uri fileUri;
+
+	private SharedPreferences preferences;
 
 	float scale = 1.0f;
 
@@ -130,18 +136,26 @@ public class STLView extends PApplet {
 		rotateY(rotateY);
 		scale(scale);
 		if (mesh != null) {
-		toxic.chooseStrokeFill(false, TColor.newGray(150), TColor.newGray(150));
-		toxic.mesh(mesh, false);
-		}
-		else {
+			toxic.chooseStrokeFill(false, TColor.newGray(150),
+					TColor.newGray(150));
+			toxic.mesh(mesh, false);
+		} else {
 			shape(shape);
 		}
 	}
 
 	private void initlights() {
-		directionalLight(200, 200, 200, 0, 0, 1);
-		directionalLight(200, 200, 200, 1, 1, 0);
-		directionalLight(200, 200, 200, -1, 1, -10);
+		directionalLight(brightness, brightness, brightness, 0, 0, 1);
+		directionalLight(brightness, brightness, brightness, 1, 1, 0);
+		directionalLight(brightness, brightness, brightness, -1, 1, -10);
+	}
+
+	@Override
+	public void keyPressed() {
+		if (key == CODED && keyCode == KeyEvent.KEYCODE_MENU) {
+			Intent intent = new Intent(STLView.this, Preferences.class);
+			startActivity(intent);
+		}
 	}
 
 	@Override
@@ -158,6 +172,10 @@ public class STLView extends PApplet {
 	@Override
 	protected void onStart() {
 		super.onStart();
+
+		preferences = PreferenceManager
+				.getDefaultSharedPreferences(STLView.this);
+		brightness = Float.parseFloat(preferences.getString("brightness", "200"));
 		if (downloader != null) {
 			try {
 				fileUri = downloader.get();
@@ -218,11 +236,12 @@ public class STLView extends PApplet {
 
 		switch (action) {
 		case MotionEvent.ACTION_MOVE:
-			Log.i(TAG, "move");
+
+			long now = android.os.SystemClock.uptimeMillis();
 			// point 1 coords
 			xCur = event.getX(0);
 			yCur = event.getY(0);
-			if (p_count == 1) {
+			if (p_count == 1 && now - mLastGestureTime > 200) {
 				rotateY = map(xCur, 0, screenWidth, TWO_PI, 0);
 				rotateX = map(yCur, 0, screenHeight, TWO_PI, 0);
 			}
@@ -238,7 +257,6 @@ public class STLView extends PApplet {
 				distDelta = distPre > -1 ? distCur - distPre : 0;
 				Log.i(TAG, "distDelta: " + distDelta);
 				float scale = this.scale;
-				long now = android.os.SystemClock.uptimeMillis();
 				if (Math.abs(distDelta) > mTouchSlop) {
 					mLastGestureTime = 0;
 
@@ -269,7 +287,6 @@ public class STLView extends PApplet {
 			break;
 		case MotionEvent.ACTION_DOWN:
 		case MotionEvent.ACTION_UP:
-			Log.i(TAG, "updown");
 			distPre = -1;
 			mLastGestureTime = android.os.SystemClock.uptimeMillis();
 			break;

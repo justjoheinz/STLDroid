@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen
   xmlns:android="http://schemas.android.com/apk/res/android">
-    <PreferenceCategory android:title="File"></PreferenceCategory>
-    <PreferenceCategory android:title="Rendering"></PreferenceCategory>
+    <PreferenceCategory android:title="File">
+        <EditTextPreference android:summary="default path for file lookup" android:key="path" android:title="Path"></EditTextPreference>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Rendering">
+        <EditTextPreference android:summary="Brightness for light rendering" android:key="brightness" android:title="Brightness"></EditTextPreference>
+    </PreferenceCategory>
     <PreferenceCategory android:title="Bounding Box"></PreferenceCategory>
     
 </PreferenceScreen>

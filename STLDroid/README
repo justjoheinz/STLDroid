@@ -1,2 +1,18 @@
 README file for STLDroid
 
+* adjustable brightness
+* touch rotate
+* pinch zoom
+* reads ASCII STL files
+* integrates into filemanager and browser
+
+FileBrowser uses the implementation by
+http://android-file-dialog.googlecode.com/svn/trunk/FileExplorer
+
+Rendering is done using processing
+http://code.google.com/p/processing/
+
+TODO:
+* support binary STL files
+* improve error handling
+* implement bounding box

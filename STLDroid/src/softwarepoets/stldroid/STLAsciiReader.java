@@ -13,57 +13,6 @@ import android.util.Log;
 
 public class STLAsciiReader {
 
-	private StreamTokenizer t;
-
-	private Mesh3D tmpMesh;
-
-	private ParserState state = new HeadState();
-
-	public Mesh3D load(String fileName) throws FileNotFoundException {
-		return load(new FileInputStream(fileName));
-	}
-
-	public Mesh3D load(InputStream fis) {
-		tmpMesh = new TriangleMesh();
-		Log.i("STLAsciiReader", "parsing...");
-		t = new StreamTokenizer(fis);
-		t.resetSyntax();
-		t.wordChars(33, 126);
-		t.whitespaceChars(0, 32);
-		
-		while ( state != null) {
-			Log.i("STLAsciiReader", "parsing...");
-			state = state.next();
-		}
-
-		return tmpMesh;
-
-	}
-
-	
-
-	public interface ParserState {
-		ParserState next() throws IllegalStateException;
-	}
-
-	public class HeadState implements ParserState {
-
-		@Override
-		public ParserState next() throws IllegalStateException {
-			try {
-				// solid
-				t.nextToken();
-				if (!"solid".equalsIgnoreCase(t.sval))
-					throw new IllegalStateException(t.sval);
-				// name
-				t.nextToken();
-				return new FacetState();
-			} catch (IOException e) {
-				throw new IllegalStateException(e.getMessage());
-			}
-		}
-	}
-
 	class FacetState implements ParserState {
 		@Override
 		public ParserState next() throws IllegalStateException {
@@ -136,5 +85,56 @@ public class STLAsciiReader {
 			return null;
 		}
 
+	}
+
+	public class HeadState implements ParserState {
+
+		@Override
+		public ParserState next() throws IllegalStateException {
+			try {
+				// solid
+				t.nextToken();
+				if (!"solid".equalsIgnoreCase(t.sval))
+					throw new IllegalStateException(t.sval);
+				// name
+				t.nextToken();
+				return new FacetState();
+			} catch (IOException e) {
+				throw new IllegalStateException(e.getMessage());
+			}
+		}
+	}
+
+	public interface ParserState {
+		ParserState next() throws IllegalStateException;
+	}
+
+	private StreamTokenizer t;
+
+	
+
+	private Mesh3D tmpMesh;
+
+	private ParserState state = new HeadState();
+
+	public Mesh3D load(InputStream fis) {
+		tmpMesh = new TriangleMesh();
+		Log.i("STLAsciiReader", "parsing...");
+		t = new StreamTokenizer(fis);
+		t.resetSyntax();
+		t.wordChars(33, 126);
+		t.whitespaceChars(0, 32);
+		
+		while ( state != null) {
+			Log.i("STLAsciiReader", "parsing...");
+			state = state.next();
+		}
+
+		return tmpMesh;
+
+	}
+
+	public Mesh3D load(String fileName) throws FileNotFoundException {
+		return load(new FileInputStream(fileName));
 	}
 }

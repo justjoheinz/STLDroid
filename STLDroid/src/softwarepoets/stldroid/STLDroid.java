@@ -2,25 +2,18 @@ package softwarepoets.stldroid;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.KeyEvent;
 
 import com.lamerman.FileDialog;
 
 public class STLDroid extends Activity {
 	/** Called when the activity is first created. */
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.main);
-
-		Intent fileIntent = new Intent(STLDroid.this, FileDialog.class);
-		fileIntent.putExtra(FileDialog.START_PATH, "/sdcard/download");
-		startActivityForResult(fileIntent, 1);
-		
-	}
-
+	
+	SharedPreferences preferences;
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		// TODO Auto-generated method stub
@@ -35,6 +28,17 @@ public class STLDroid extends Activity {
 				finish();
 			}
 		}
+	}
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.main);
+		preferences = PreferenceManager.getDefaultSharedPreferences(STLDroid.this);
+		String path = preferences.getString("path", "/sdcard");
+		Intent fileIntent = new Intent(STLDroid.this, FileDialog.class);
+		fileIntent.putExtra(FileDialog.START_PATH, path);
+		startActivityForResult(fileIntent, 1);
 	}
 
 	@Override
