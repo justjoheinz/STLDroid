@@ -14,9 +14,10 @@ import java.util.concurrent.ExecutionException;
 import processing.core.PApplet;
 import toxi.color.TColor;
 import toxi.geom.AABB;
-import toxi.geom.Plane;
 import toxi.geom.Vec3D;
 import toxi.geom.mesh.Mesh3D;
+import toxi.geom.mesh.STLReader;
+import toxi.geom.mesh.TriangleMesh;
 import toxi.processing.ToxiclibsSupport;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -93,8 +94,29 @@ public class STLView extends PApplet {
 
 	}
 
-	class Parser extends AsyncTask<String, Void, Mesh3D> {
+	class Parser extends AsyncTask<String, String, Mesh3D> {
 		private ProgressDialog pd;
+
+		@Override
+		protected Mesh3D doInBackground(String... params) {
+			STLAsciiReader reader = new STLAsciiReader();
+			Mesh3D parsedMesh = null;
+			try {
+				publishProgress("Parsing as ASCII");
+				parsedMesh = reader.load(params[0]);
+			} catch (FileNotFoundException e) {
+				Log.e(TAG, e.getMessage());
+			} catch (IllegalStateException e) {
+				Log.e(TAG, "Not an Ascii STL File: " + e.getMessage());
+			} finally {
+				if (parsedMesh == null) {
+					publishProgress("Parsing as Binary");
+					parsedMesh = new STLReader().loadBinary(params[0],
+							TriangleMesh.class);
+				}
+			}
+			return parsedMesh;
+		}
 
 		@Override
 		protected void onPostExecute(Mesh3D result) {
@@ -108,14 +130,8 @@ public class STLView extends PApplet {
 		}
 
 		@Override
-		protected Mesh3D doInBackground(String... params) {
-			STLAsciiReader reader = new STLAsciiReader();
-			try {
-				return reader.load(params[0]);
-			} catch (FileNotFoundException e) {
-				Log.e(TAG, e.getMessage());
-			}
-			return null;
+		protected void onProgressUpdate(String... values) {
+			pd.setMessage(values[0]);
 		}
 
 	}
@@ -236,8 +252,6 @@ public class STLView extends PApplet {
 				downloader = null;
 			}
 		}
-		Log.i(TAG, "filename: " + fileUri.getPath());
-		Log.i(TAG, "filename: " + fileUri.getPath());
 		if (fileUri.getLastPathSegment().toLowerCase().endsWith(".stl")) {
 			try {
 				if (mesh == null) {
@@ -275,7 +289,6 @@ public class STLView extends PApplet {
 
 	@Override
 	public boolean surfaceTouchEvent(MotionEvent event) {
-		Log.i(TAG, "surfachtouchevent");
 		int action = event.getAction() & MotionEvent.ACTION_MASK, p_count = event
 				.getPointerCount();
 
