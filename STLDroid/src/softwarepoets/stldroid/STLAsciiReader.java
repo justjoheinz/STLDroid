@@ -58,7 +58,7 @@ public class STLAsciiReader {
 				t.nextToken();
 				if ("facet".equalsIgnoreCase(t.sval)) {
 					t.pushBack();
-					return new FacetState();
+					return FACETINSTANCE;
 				}
 				if ("endsolid".equalsIgnoreCase(t.sval)) {
 					t.pushBack();
@@ -106,7 +106,7 @@ public class STLAsciiReader {
 
 	private StreamTokenizer t;
 
-	
+    private  final ParserState FACETINSTANCE = this.new FacetState();	
 
 	private Mesh3D tmpMesh;
 

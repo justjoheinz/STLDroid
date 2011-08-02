@@ -3,9 +3,15 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
-	<classpathentry kind="src" path="FileExplorer_src"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/toxiclibs"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/toxiclibs">
+		<accessrules>
+			<accessrule kind="accessible" pattern="toxi/geom/*"/>
+			<accessrule kind="accessible" pattern="toxi/geom/mesh/*"/>
+			<accessrule kind="accessible" pattern="toxi/processing/*"/>
+		</accessrules>
+	</classpathentry>
 	<classpathentry combineaccessrules="false" kind="src" path="/android-core"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/processing-opengl"/>
+	<classpathentry kind="src" path="FileExplorer_src"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

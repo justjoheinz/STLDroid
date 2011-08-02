@@ -176,6 +176,8 @@ public class STLView extends PApplet {
 
 	private AABB bBox;
 
+	private Parser parser;
+
 	@Override
 	public void draw() {
 		background(0);
@@ -257,16 +259,11 @@ public class STLView extends PApplet {
 			}
 		}
 		if (fileUri.getLastPathSegment().toLowerCase().endsWith(".stl")) {
-			try {
-				if (mesh == null) {
-					Log.i(TAG, "STL File");
-					Parser parser = new Parser();
-					parser.execute(fileUri.getPath());
-				}
-			} catch (IllegalStateException e) {
-				Toast.makeText(STLView.this, "Not an ASCII STL file",
-						Toast.LENGTH_LONG).show();
-				finish();
+			if (mesh == null) {
+				Log.i(TAG, "STL File");
+				parser = new Parser();
+				parser.execute(fileUri.getPath());
+				parser = null;
 			}
 		}
 	}
