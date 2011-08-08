@@ -10,6 +10,8 @@ V1.1
 * reads binary STL files
 V1.2
 * improved integration with different file managers
+V1.3
+* progress bar when loading binary stl files
 
 
 FileBrowser uses the implementation by
@@ -26,3 +28,4 @@ TODO:
 * improve filemanager and browser integration
 * improve error handling
 * implement bounding box
+* fix memory leak

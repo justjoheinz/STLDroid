@@ -1,5 +1,6 @@
 package softwarepoets.stldroid;
 
+import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -114,13 +115,20 @@ public class STLAsciiReader {
 
 	public Mesh3D load(InputStream fis) throws IllegalStateException {
 		tmpMesh = new TriangleMesh();
-		t = new StreamTokenizer(fis);
+		BufferedInputStream buf = new BufferedInputStream(fis, 0x10000);
+		t = new StreamTokenizer(buf);
 		t.resetSyntax();
 		t.wordChars(33, 126);
 		t.whitespaceChars(0, 32);
 		
 		while ( state != null) {
 			state = state.next();
+		}
+		
+		try {
+			buf.close();
+		} catch (IOException e) {
+		
 		}
 
 		return tmpMesh;

@@ -11,7 +11,6 @@
 		</accessrules>
 	</classpathentry>
 	<classpathentry combineaccessrules="false" kind="src" path="/android-core"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/processing-opengl"/>
 	<classpathentry kind="src" path="FileExplorer_src"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

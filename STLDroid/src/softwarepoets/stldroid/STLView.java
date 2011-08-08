@@ -2,11 +2,13 @@ package softwarepoets.stldroid;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.concurrent.ExecutionException;
@@ -17,6 +19,7 @@ import toxi.geom.AABB;
 import toxi.geom.Vec3D;
 import toxi.geom.mesh.Mesh3D;
 import toxi.geom.mesh.STLReader;
+import toxi.geom.mesh.STLReader.STLReaderCallback;
 import toxi.geom.mesh.TriangleMesh;
 import toxi.processing.ToxiclibsSupport;
 import android.app.ProgressDialog;
@@ -29,9 +32,109 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.widget.Toast;
 
-public class STLView extends PApplet {
+public class STLView extends PApplet implements ParseResultListener {
+
+	class AsciiParser extends AsyncTask<String, String, Mesh3D> {
+		private ProgressDialog pd;
+		private String fileName;
+
+		private WeakReference<ParseResultListener> listener;
+
+		@Override
+		protected Mesh3D doInBackground(String... params) {
+			STLAsciiReader reader = new STLAsciiReader();
+			Mesh3D parsedMesh = null;
+			fileName = params[0];
+			try {
+				publishProgress("Parsing as ASCII");
+				parsedMesh = reader.load(params[0]);
+			} catch (FileNotFoundException e) {
+				Log.e(TAG, e.getMessage());
+			} catch (IllegalStateException e) {
+				Log.e(TAG, "Not an Ascii STL File: " + e.getMessage());
+			}
+			return parsedMesh;
+		}
+
+		@Override
+		protected void onPostExecute(Mesh3D result) {
+			pd.dismiss();
+			listener.get().postResult(result);
+		}
+
+		@Override
+		protected void onPreExecute() {
+			pd = ProgressDialog.show(STLView.this, null, "Parsing as ASCII");
+		}
+
+		@Override
+		protected void onProgressUpdate(String... values) {
+			pd.setMessage(values[0]);
+		}
+
+		public void setParseResultHandler(ParseResultListener listener) {
+			this.listener = new WeakReference<ParseResultListener>(listener);
+		}
+
+	}
+
+	class BinaryParser extends AsyncTask<String, Integer, Mesh3D> implements
+			STLReaderCallback {
+		private ProgressDialog pd;
+
+		private WeakReference<ParseResultListener> listener;
+
+		@Override
+		protected Mesh3D doInBackground(String... params) {
+			STLReader reader = new STLReader();
+			reader.setSTLReaderCallBack(this);
+			Mesh3D parsedMesh = null;
+			// publishProgress("Parsing as ASCII");
+			try {
+				InputStream is = new FileInputStream(new File(params[0]));
+				parsedMesh = reader.loadBinary(is, "stl", 0x4000,
+						TriangleMesh.class);
+			} catch (FileNotFoundException e) {
+				parsedMesh = null;
+			}
+
+			return parsedMesh;
+		}
+
+		@Override
+		protected void onPostExecute(Mesh3D result) {
+			pd.dismiss();
+			result.center(Vec3D.ZERO);
+			mesh = result;
+			listener.get().postResult(result);
+		}
+
+		@Override
+		protected void onPreExecute() {
+			pd = new ProgressDialog(STLView.this);
+			pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+			pd.setMessage("Parsing binary STL");
+			pd.show();
+		}
+
+		@Override
+		protected void onProgressUpdate(Integer... values) {
+			if (pd.getMax() != values[0])
+				pd.setMax(values[0]);
+			pd.setProgress(values[1]);
+		}
+
+		@Override
+		public void report(int totalfaces, int currentFace) {
+			publishProgress(totalfaces, currentFace);
+		}
+
+		public void setParseResultHandler(ParseResultListener listener) {
+			this.listener = new WeakReference<ParseResultListener>(listener);
+		}
+
+	}
 
 	class Download extends AsyncTask<Uri, Void, Uri> {
 
@@ -91,49 +194,6 @@ public class STLView extends PApplet {
 		protected void onPreExecute() {
 			pd = ProgressDialog.show(STLView.this, null, "Downloading");
 		}
-
-	}
-
-	class Parser extends AsyncTask<String, String, Mesh3D> {
-		private ProgressDialog pd;
-
-		@Override
-		protected Mesh3D doInBackground(String... params) {
-			STLAsciiReader reader = new STLAsciiReader();
-			Mesh3D parsedMesh = null;
-			try {
-				publishProgress("Parsing as ASCII");
-				parsedMesh = reader.load(params[0]);
-			} catch (FileNotFoundException e) {
-				Log.e(TAG, e.getMessage());
-			} catch (IllegalStateException e) {
-				Log.e(TAG, "Not an Ascii STL File: " + e.getMessage());
-			} finally {
-				if (parsedMesh == null) {
-					publishProgress("Parsing as Binary");
-					parsedMesh = new STLReader().loadBinary(params[0],
-							TriangleMesh.class);
-				}
-			}
-			return parsedMesh;
-		}
-
-		@Override
-		protected void onPostExecute(Mesh3D result) {
-			pd.dismiss();
-			mesh = result;
-		}
-
-		@Override
-		protected void onPreExecute() {
-			pd = ProgressDialog.show(STLView.this, null, "Parsing");
-		}
-
-		@Override
-		protected void onProgressUpdate(String... values) {
-			pd.setMessage(values[0]);
-		}
-
 	}
 
 	private static final String TAG = "STLVIEW";
@@ -176,7 +236,12 @@ public class STLView extends PApplet {
 
 	private AABB bBox;
 
-	private Parser parser;
+	@Override
+	public void destroy() {
+		mesh = null;
+		Log.i(TAG, "STLView destroy called.");
+		super.destroy();
+	}
 
 	@Override
 	public void draw() {
@@ -190,14 +255,9 @@ public class STLView extends PApplet {
 			toxic.chooseStrokeFill(false, TColor.newRGBA(1f, 0, 0, 0.01f),
 					TColor.newRGBA(0.7f, 0, 0, 0.1f));
 			toxic.box(bBox);
-			/*
-			 * toxic.plane(Plane.XY, 100); toxic.plane(Plane.XZ, 100);
-			 * toxic.plane(Plane.YZ, 100);
-			 */
 		}
 
 		if (mesh != null) {
-			shininess(1.0f);
 			toxic.chooseStrokeFill(false, TColor.newGray(0.8f),
 					TColor.newGray(0.8f));
 			toxic.mesh(mesh, false);
@@ -233,7 +293,7 @@ public class STLView extends PApplet {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		fileUri = getIntent().getData();
-		Log.i(TAG, fileUri.toString());
+		Log.i(TAG, "onCreate started: " + fileUri.toString());
 		if ("http".equals(fileUri.getScheme())) {
 			downloader = new Download();
 			downloader.execute(fileUri);
@@ -241,9 +301,27 @@ public class STLView extends PApplet {
 	}
 
 	@Override
+	public void onDestroy() {
+		Log.i(TAG, "STLView onDestroy called.");
+		super.onDestroy();
+	}
+
+	@Override
+	protected void onPause() {
+		Log.i(TAG, "STLView onPause called.");
+		super.onPause();
+	}
+
+	@Override
+	protected void onResume() {
+		Log.i(TAG, "STLView onResume called.");
+		super.onResume();
+	}
+
+	@Override
 	protected void onStart() {
 		super.onStart();
-
+		Log.i(TAG, "STLView onStart() called");
 		getPrefs();
 		bBox = new AABB(new Vec3D(0, 0, 0), new Vec3D(xBuild / 2, yBuild / 2,
 				zBuild / 2));
@@ -261,11 +339,45 @@ public class STLView extends PApplet {
 		if (fileUri.getLastPathSegment().toLowerCase().endsWith(".stl")) {
 			if (mesh == null) {
 				Log.i(TAG, "STL File");
-				parser = new Parser();
+				AsciiParser parser = new AsciiParser();
+				parser.setParseResultHandler(this);
 				parser.execute(fileUri.getPath());
-				parser = null;
 			}
 		}
+	}
+
+	@Override
+	protected void onStop() {
+		Log.i(TAG, "STLView onStop called.");
+		super.onStop();
+		mesh = null;
+	}
+
+	@Override
+	public void pause() {
+		Log.i(TAG, "STLView pause called.");
+		super.pause();
+	}
+
+	@Override
+	public synchronized void postResult(Mesh3D parsedMesh) {
+		if (parsedMesh == null) {
+			BinaryParser binParser = new BinaryParser();
+			binParser.setParseResultHandler(this);
+			binParser.execute(fileUri.getPath());
+			return;
+		} else {
+			parsedMesh.center(Vec3D.ZERO);
+			mesh = parsedMesh;
+		}
+
+	}
+
+	@Override
+	public void resume() {
+		Log.i(TAG, "STLView resume called.");
+		// TODO Auto-generated method stub
+		super.resume();
 	}
 
 	@Override
@@ -280,12 +392,24 @@ public class STLView extends PApplet {
 
 	@Override
 	public String sketchRenderer() {
-		return OPENGL;
+		return P3D;
 	}
 
 	@Override
 	public int sketchWidth() {
 		return screenWidth;
+	}
+
+	@Override
+	public void start() {
+		Log.i(TAG, "STLView start called.");
+		super.start();
+	}
+
+	@Override
+	public void stop() {
+		Log.i(TAG, "STLView stop called.");
+		super.stop();
 	}
 
 	@Override
@@ -305,7 +429,6 @@ public class STLView extends PApplet {
 				rotateX = map(yCur, 0, screenHeight, TWO_PI, 0);
 			}
 			if (p_count > 1) {
-				Log.i(TAG, "move pcount >2");
 				// point 2 coords
 				xSec = event.getX(1);
 				ySec = event.getY(1);
@@ -314,7 +437,6 @@ public class STLView extends PApplet {
 				distCur = (float) Math.sqrt(Math.pow(xSec - xCur, 2)
 						+ Math.pow(ySec - yCur, 2));
 				distDelta = distPre > -1 ? distCur - distPre : 0;
-				Log.i(TAG, "distDelta: " + distDelta);
 				float scale = this.scale;
 				if (Math.abs(distDelta) > mTouchSlop) {
 					mLastGestureTime = 0;

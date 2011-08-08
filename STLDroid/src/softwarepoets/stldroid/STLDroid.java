@@ -42,17 +42,18 @@ public class STLDroid extends Activity {
 
 		String path;
 		File file = Environment.getExternalStorageDirectory();
-		path = (file.exists() ? file.getPath() : Environment.getRootDirectory().getPath());
+		path = (file.exists() ? file.getPath() : Environment.getRootDirectory()
+				.getPath());
 		if (Environment.MEDIA_MOUNTED.equals(Environment
 				.getExternalStorageState()))
-		if (Environment.MEDIA_MOUNTED.equals(Environment
-				.getExternalStorageState())) {
-			path = preferences.getString("path", Environment
-					.getExternalStorageDirectory().getPath());
-		} else {
-			path = preferences.getString("path", Environment.getRootDirectory()
-					.getPath());
-		}
+			if (Environment.MEDIA_MOUNTED.equals(Environment
+					.getExternalStorageState())) {
+				path = preferences.getString("path", Environment
+						.getExternalStorageDirectory().getPath());
+			} else {
+				path = preferences.getString("path", Environment
+						.getRootDirectory().getPath());
+			}
 		Intent fileIntent = new Intent(STLDroid.this, FileDialog.class);
 		fileIntent.putExtra(FileDialog.START_PATH, path);
 		startActivityForResult(fileIntent, 1);
