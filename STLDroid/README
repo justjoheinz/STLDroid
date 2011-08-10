@@ -12,6 +12,7 @@ V1.2
 * improved integration with different file managers
 V1.3
 * progress bar when loading binary stl files
+* improved Application life cycle
 
 
 FileBrowser uses the implementation by

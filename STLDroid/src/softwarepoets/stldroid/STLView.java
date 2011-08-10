@@ -8,7 +8,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.concurrent.ExecutionException;
@@ -39,7 +38,7 @@ public class STLView extends PApplet implements ParseResultListener {
 		private ProgressDialog pd;
 		private String fileName;
 
-		private WeakReference<ParseResultListener> listener;
+		private ParseResultListener listener;
 
 		@Override
 		protected Mesh3D doInBackground(String... params) {
@@ -48,7 +47,7 @@ public class STLView extends PApplet implements ParseResultListener {
 			fileName = params[0];
 			try {
 				publishProgress("Parsing as ASCII");
-				parsedMesh = reader.load(params[0]);
+				parsedMesh = reader.load(fileName);
 			} catch (FileNotFoundException e) {
 				Log.e(TAG, e.getMessage());
 			} catch (IllegalStateException e) {
@@ -60,7 +59,8 @@ public class STLView extends PApplet implements ParseResultListener {
 		@Override
 		protected void onPostExecute(Mesh3D result) {
 			pd.dismiss();
-			listener.get().postResult(result);
+			listener.postResult(result);
+			listener = null;
 		}
 
 		@Override
@@ -74,7 +74,7 @@ public class STLView extends PApplet implements ParseResultListener {
 		}
 
 		public void setParseResultHandler(ParseResultListener listener) {
-			this.listener = new WeakReference<ParseResultListener>(listener);
+			this.listener = listener;
 		}
 
 	}
@@ -83,7 +83,7 @@ public class STLView extends PApplet implements ParseResultListener {
 			STLReaderCallback {
 		private ProgressDialog pd;
 
-		private WeakReference<ParseResultListener> listener;
+		private ParseResultListener listener;
 
 		@Override
 		protected Mesh3D doInBackground(String... params) {
@@ -106,8 +106,8 @@ public class STLView extends PApplet implements ParseResultListener {
 		protected void onPostExecute(Mesh3D result) {
 			pd.dismiss();
 			result.center(Vec3D.ZERO);
-			mesh = result;
-			listener.get().postResult(result);
+			listener.postResult(result);
+			listener = null;
 		}
 
 		@Override
@@ -131,7 +131,7 @@ public class STLView extends PApplet implements ParseResultListener {
 		}
 
 		public void setParseResultHandler(ParseResultListener listener) {
-			this.listener = new WeakReference<ParseResultListener>(listener);
+			this.listener = listener;
 		}
 
 	}
@@ -220,7 +220,10 @@ public class STLView extends PApplet implements ParseResultListener {
 
 	private SharedPreferences preferences;
 
-	float scale = 1.0f;
+	private float scale = 1.0f;
+
+	private BinaryParser binParser;
+	private AsciiParser asciiParser;
 
 	float xCur, yCur, xPre, yPre, xSec, ySec, distDelta, distCur, distPre = -1;
 	int mWidth, mHeight, mTouchSlop;
@@ -264,6 +267,10 @@ public class STLView extends PApplet implements ParseResultListener {
 		}
 	}
 
+	public synchronized void setMesh(Mesh3D mesh) {
+		this.mesh = mesh;
+	}
+
 	private void getPrefs() {
 		preferences = PreferenceManager
 				.getDefaultSharedPreferences(STLView.this);
@@ -292,8 +299,9 @@ public class STLView extends PApplet implements ParseResultListener {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		Log.i(TAG, "onCreate started");
 		fileUri = getIntent().getData();
-		Log.i(TAG, "onCreate started: " + fileUri.toString());
+		Log.i(TAG, "onCreate intent: " + fileUri.toString());
 		if ("http".equals(fileUri.getScheme())) {
 			downloader = new Download();
 			downloader.execute(fileUri);
@@ -303,6 +311,7 @@ public class STLView extends PApplet implements ParseResultListener {
 	@Override
 	public void onDestroy() {
 		Log.i(TAG, "STLView onDestroy called.");
+		mesh = null;
 		super.onDestroy();
 	}
 
@@ -339,9 +348,11 @@ public class STLView extends PApplet implements ParseResultListener {
 		if (fileUri.getLastPathSegment().toLowerCase().endsWith(".stl")) {
 			if (mesh == null) {
 				Log.i(TAG, "STL File");
-				AsciiParser parser = new AsciiParser();
-				parser.setParseResultHandler(this);
-				parser.execute(fileUri.getPath());
+				if (asciiParser == null) {
+					asciiParser = new AsciiParser();
+					asciiParser.setParseResultHandler(this);
+				}
+				asciiParser.execute(fileUri.getPath());
 			}
 		}
 	}
@@ -349,26 +360,22 @@ public class STLView extends PApplet implements ParseResultListener {
 	@Override
 	protected void onStop() {
 		Log.i(TAG, "STLView onStop called.");
-		super.onStop();
 		mesh = null;
-	}
-
-	@Override
-	public void pause() {
-		Log.i(TAG, "STLView pause called.");
-		super.pause();
+		super.onStop();
 	}
 
 	@Override
 	public synchronized void postResult(Mesh3D parsedMesh) {
 		if (parsedMesh == null) {
-			BinaryParser binParser = new BinaryParser();
-			binParser.setParseResultHandler(this);
+			if (binParser == null) {
+				binParser = new BinaryParser();
+				binParser.setParseResultHandler(this);
+			}
 			binParser.execute(fileUri.getPath());
 			return;
 		} else {
 			parsedMesh.center(Vec3D.ZERO);
-			mesh = parsedMesh;
+			setMesh(parsedMesh);
 		}
 
 	}
@@ -398,18 +405,6 @@ public class STLView extends PApplet implements ParseResultListener {
 	@Override
 	public int sketchWidth() {
 		return screenWidth;
-	}
-
-	@Override
-	public void start() {
-		Log.i(TAG, "STLView start called.");
-		super.start();
-	}
-
-	@Override
-	public void stop() {
-		Log.i(TAG, "STLView stop called.");
-		super.stop();
 	}
 
 	@Override

@@ -13,7 +13,7 @@
 			</intent-filter>
 		</activity>
 		<activity android:name="com.lamerman.FileDialog"></activity>
-		<activity android:name="STLView">
+		<activity android:name="STLView" android:configChanges="orientation|keyboardHidden">
 			<intent-filter>
 				<action android:name="android.intent.action.VIEW" />/>
 				<category android:name="android.intent.category.DEFAULT"></category>
