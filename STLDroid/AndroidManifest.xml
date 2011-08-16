@@ -15,12 +15,11 @@
 		<activity android:name="com.lamerman.FileDialog"></activity>
 		<activity android:name="STLView" android:configChanges="orientation|keyboardHidden">
 			<intent-filter>
-				<action android:name="android.intent.action.VIEW" />/>
+				<action android:name="android.intent.action.VIEW" />
 				<category android:name="android.intent.category.DEFAULT"></category>
 				<category android:name="android.intent.category.BROWSABLE"></category>
 				<data android:scheme="file" android:mimeType="*/*" android:pathPattern=".*\\.stl" />
 				<data android:scheme="http" android:mimeType="*/*" android:pathPattern=".*\\.stl"/>
-<!-- 			<data android:scheme="content" android:mimeType="*/*" android:pathPattern=".*\\.stl"/>  -->	
 			</intent-filter>
 		</activity>
 		<activity android:name="Preferences"></activity>
