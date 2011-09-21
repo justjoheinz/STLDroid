@@ -348,10 +348,8 @@ public class STLView extends PApplet implements ParseResultListener {
 		if (fileUri.getLastPathSegment().toLowerCase().endsWith(".stl")) {
 			if (mesh == null) {
 				Log.i(TAG, "STL File");
-				if (asciiParser == null) {
-					asciiParser = new AsciiParser();
-					asciiParser.setParseResultHandler(this);
-				}
+				asciiParser = new AsciiParser();
+				asciiParser.setParseResultHandler(this);
 				asciiParser.execute(fileUri.getPath());
 			}
 		}
@@ -367,10 +365,8 @@ public class STLView extends PApplet implements ParseResultListener {
 	@Override
 	public synchronized void postResult(Mesh3D parsedMesh) {
 		if (parsedMesh == null) {
-			if (binParser == null) {
-				binParser = new BinaryParser();
-				binParser.setParseResultHandler(this);
-			}
+			binParser = new BinaryParser();
+			binParser.setParseResultHandler(this);
 			binParser.execute(fileUri.getPath());
 			return;
 		} else {
