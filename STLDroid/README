@@ -17,6 +17,7 @@ V1.3
 
 FileBrowser uses the implementation by
 http://android-file-dialog.googlecode.com/svn/trunk/FileExplorer
+It is now integrated into the source of STLDroid and not used as a library anymore.
 
 Rendering is done using processing
 http://code.google.com/p/processing/
