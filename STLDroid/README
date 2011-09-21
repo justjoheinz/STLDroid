@@ -13,6 +13,8 @@ V1.2
 V1.3
 * progress bar when loading binary stl files
 * improved Application life cycle
+V1.4
+* fixed another intent bug
 
 
 FileBrowser uses the implementation by
