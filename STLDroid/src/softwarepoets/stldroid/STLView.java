@@ -358,7 +358,7 @@ public class STLView extends PApplet implements ParseResultListener {
 	@Override
 	protected void onStop() {
 		Log.i(TAG, "STLView onStop called.");
-		mesh = null;
+		//mesh = null;
 		super.onStop();
 	}
 

@@ -1,17 +1,12 @@
 package softwarepoets.stldroid;
 
-import com.google.inject.AbstractModule;
+import roboguice.config.AbstractAndroidModule;
 
-/**
- * Configuration for the required injectors.
- * @author markusklink
- *
- */
-public class STLDroidModule extends AbstractModule {
+public class STLDroidModule extends AbstractAndroidModule {
 
 	@Override
 	protected void configure() {
-
+		
 	}
 
 }
