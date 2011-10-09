@@ -11,5 +11,7 @@
 		</accessrules>
 	</classpathentry>
 	<classpathentry combineaccessrules="false" kind="src" path="/android-core"/>
+	<classpathentry kind="lib" path="lib/roboguice-1.1.2.jar"/>
+	<classpathentry kind="lib" path="lib/guice-2.0-no_aop.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

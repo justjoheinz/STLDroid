@@ -1,9 +1,10 @@
 package softwarepoets.stldroid;
 
+import roboguice.activity.RoboPreferenceActivity;
 import android.os.Bundle;
-import android.preference.PreferenceActivity;
 
-public class Preferences extends PreferenceActivity {
+public class Preferences extends RoboPreferenceActivity {
+	
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

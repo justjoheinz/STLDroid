@@ -2,7 +2,7 @@ package softwarepoets.stldroid;
 
 import java.io.File;
 
-import android.app.Activity;
+import roboguice.activity.RoboActivity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -12,7 +12,7 @@ import android.preference.PreferenceManager;
 
 import com.lamerman.FileDialog;
 
-public class STLDroid extends Activity {
+public class STLDroid extends RoboActivity {
 	/** Called when the activity is first created. */
 
 	SharedPreferences preferences;

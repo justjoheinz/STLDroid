@@ -348,10 +348,8 @@ public class STLView extends PApplet implements ParseResultListener {
 		if (fileUri.getLastPathSegment().toLowerCase().endsWith(".stl")) {
 			if (mesh == null) {
 				Log.i(TAG, "STL File");
-				if (asciiParser == null) {
-					asciiParser = new AsciiParser();
-					asciiParser.setParseResultHandler(this);
-				}
+				asciiParser = new AsciiParser();
+				asciiParser.setParseResultHandler(this);
 				asciiParser.execute(fileUri.getPath());
 			}
 		}

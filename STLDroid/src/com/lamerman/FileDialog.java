@@ -6,9 +6,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.TreeMap;
 
+import roboguice.activity.RoboListActivity;
+import roboguice.inject.InjectView;
 import softwarepoets.stldroid.R;
 import android.app.AlertDialog;
-import android.app.ListActivity;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -16,13 +17,12 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
-public class FileDialog extends ListActivity {
+public class FileDialog extends RoboListActivity {
 
 	private static final String ITEM_KEY = "key";
 	private static final String ITEM_IMAGE = "image";
@@ -33,19 +33,21 @@ public class FileDialog extends ListActivity {
 	public static final String SELECTION_MODE = "SELECTION_MODE";
 
 	private List<String> path = null;
+	@InjectView(R.id.path)
 	private TextView myPath;
-	private EditText mFileName;
 	private ArrayList<HashMap<String, Object>> mList;
 
+	@InjectView(R.id.fdButtonSelect)
 	private Button selectButton;
 
+	@InjectView(R.id.fdButtonCancel)
+	private Button cancelButton;
+
+	@InjectView(R.id.fdLinearLayoutSelect)
 	private LinearLayout layoutSelect;
-	private LinearLayout layoutCreate;
 	private InputMethodManager inputManager;
 	private String parentPath;
 	private String currentPath = ROOT;
-
-	private int selectionMode = SelectionMode.MODE_CREATE;
 
 	private File selectedFile;
 	private HashMap<String, Integer> lastPositions = new HashMap<String, Integer>();
@@ -57,12 +59,9 @@ public class FileDialog extends ListActivity {
 		setResult(RESULT_CANCELED, getIntent());
 
 		setContentView(R.layout.file_dialog_main);
-		myPath = (TextView) findViewById(R.id.path);
-		mFileName = (EditText) findViewById(R.id.fdEditTextFile);
 
 		inputManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
 
-		selectButton = (Button) findViewById(R.id.fdButtonSelect);
 		selectButton.setEnabled(false);
 		selectButton.setOnClickListener(new OnClickListener() {
 
@@ -76,29 +75,6 @@ public class FileDialog extends ListActivity {
 			}
 		});
 
-		final Button newButton = (Button) findViewById(R.id.fdButtonNew);
-		newButton.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				setCreateVisible(v);
-
-				mFileName.setText("");
-				mFileName.requestFocus();
-			}
-		});
-
-		selectionMode = getIntent().getIntExtra(SELECTION_MODE,
-				SelectionMode.MODE_CREATE);
-		if (selectionMode == SelectionMode.MODE_OPEN) {
-			newButton.setEnabled(false);
-		}
-
-		layoutSelect = (LinearLayout) findViewById(R.id.fdLinearLayoutSelect);
-		layoutCreate = (LinearLayout) findViewById(R.id.fdLinearLayoutCreate);
-		layoutCreate.setVisibility(View.GONE);
-
-		final Button cancelButton = (Button) findViewById(R.id.fdButtonCancel);
 		cancelButton.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -106,19 +82,6 @@ public class FileDialog extends ListActivity {
 				setSelectVisible(v);
 			}
 
-		});
-		final Button createButton = (Button) findViewById(R.id.fdButtonCreate);
-		createButton.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				if (mFileName.getText().length() > 0) {
-					getIntent().putExtra(RESULT_PATH,
-							currentPath + "/" + mFileName.getText());
-					setResult(RESULT_OK, getIntent());
-					finish();
-				}
-			}
 		});
 
 		String startPath = getIntent().getStringExtra(START_PATH);
@@ -257,34 +220,18 @@ public class FileDialog extends ListActivity {
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if ((keyCode == KeyEvent.KEYCODE_BACK)) {
 			selectButton.setEnabled(false);
-
-			if (layoutCreate.getVisibility() == View.VISIBLE) {
-				layoutCreate.setVisibility(View.GONE);
-				layoutSelect.setVisibility(View.VISIBLE);
+			if (!currentPath.equals(ROOT)) {
+				getDir(parentPath);
 			} else {
-				if (!currentPath.equals(ROOT)) {
-					getDir(parentPath);
-				} else {
-					return super.onKeyDown(keyCode, event);
-				}
+				return super.onKeyDown(keyCode, event);
 			}
-
 			return true;
 		} else {
 			return super.onKeyDown(keyCode, event);
 		}
 	}
 
-	private void setCreateVisible(View v) {
-		layoutCreate.setVisibility(View.VISIBLE);
-		layoutSelect.setVisibility(View.GONE);
-
-		inputManager.hideSoftInputFromWindow(v.getWindowToken(), 0);
-		selectButton.setEnabled(false);
-	}
-
 	private void setSelectVisible(View v) {
-		layoutCreate.setVisibility(View.GONE);
 		layoutSelect.setVisibility(View.VISIBLE);
 
 		inputManager.hideSoftInputFromWindow(v.getWindowToken(), 0);
