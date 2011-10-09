@@ -36,6 +36,7 @@ public class STLDroid extends RoboActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
 		preferences = PreferenceManager
 				.getDefaultSharedPreferences(STLDroid.this);
 

@@ -365,10 +365,8 @@ public class STLView extends PApplet implements ParseResultListener {
 	@Override
 	public synchronized void postResult(Mesh3D parsedMesh) {
 		if (parsedMesh == null) {
-			if (binParser == null) {
-				binParser = new BinaryParser();
-				binParser.setParseResultHandler(this);
-			}
+			binParser = new BinaryParser();
+			binParser.setParseResultHandler(this);
 			binParser.execute(fileUri.getPath());
 			return;
 		} else {
