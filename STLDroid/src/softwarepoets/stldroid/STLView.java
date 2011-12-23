@@ -125,13 +125,14 @@ public class STLView extends PApplet implements ParseResultListener {
 			pd.setProgress(values[1]);
 		}
 
-		@Override
-		public void report(int totalfaces, int currentFace) {
-			publishProgress(totalfaces, currentFace);
-		}
-
 		public void setParseResultHandler(ParseResultListener listener) {
 			this.listener = listener;
+		}
+
+		@Override
+		public void onFaceLoaded(int totalfaces, int currentFace) {
+			publishProgress(totalfaces, currentFace);
+			
 		}
 
 	}
